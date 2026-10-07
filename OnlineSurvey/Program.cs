@@ -93,7 +93,8 @@ if (!await adminRepository.HasAnyAsync())
 {
     app.Logger.LogWarning(
         "Database chưa có tài khoản quản trị. Hãy đặt ONLINE_SURVEY_ADMIN_USERNAME " +
-        "và ONLINE_SURVEY_ADMIN_PASSWORD khi chạy ứng dụng lần đầu.");
+        "và ONLINE_SURVEY_ADMIN_PASSWORD khi chạy lần đầu trên máy chủ, hoặc mở " +
+        "http://localhost:5080/account/setup từ chính máy chạy ứng dụng để thiết lập.");
 }
 
 if (!app.Environment.IsDevelopment())

@@ -14,6 +14,7 @@ public sealed class AdminAccount
     public string PasswordHash { get; set; } = "";
     public string DisplayName { get; set; } = "Quản trị viên";
     public string Role { get; set; } = "Admin";
+    public bool IsInitialAccount { get; set; } = true;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLoginAt { get; set; }

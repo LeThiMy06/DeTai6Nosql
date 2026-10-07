@@ -13,6 +13,25 @@ public sealed class LoginViewModel
     public string? ReturnUrl { get; set; }
 }
 
+public sealed class AdminSetupViewModel
+{
+    public bool IsConfigured { get; set; }
+
+    [Required, StringLength(100, MinimumLength = 3)]
+    [Display(Name = "Tên đăng nhập")]
+    public string Username { get; set; } = "";
+
+    [Required, StringLength(128, MinimumLength = 12)]
+    [DataType(DataType.Password)]
+    [Display(Name = "Mật khẩu mới")]
+    public string Password { get; set; } = "";
+
+    [Required, Compare(nameof(Password), ErrorMessage = "Mật khẩu xác nhận không khớp.")]
+    [DataType(DataType.Password)]
+    [Display(Name = "Nhập lại mật khẩu")]
+    public string ConfirmPassword { get; set; } = "";
+}
+
 public sealed class SurveyEditorViewModel
 {
     public string? Id { get; set; }

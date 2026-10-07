@@ -23,7 +23,10 @@
         </div>
         <button class="btn btn-primary w-100 py-2" type="submit">Đăng nhập <span aria-hidden="true">→</span></button>
     </form>
-    <div class="small text-secondary mt-4 p-3 bg-light rounded-3">Tài khoản demo: <strong>admin</strong> / <strong>Admin@12345</strong></div>
+    @if (TempData["StatusMessage"] is string statusMessage)
+    {
+        <div class="alert alert-success mt-4 mb-0" role="status">@statusMessage</div>
+    }
 </div>
 
 @section Scripts {

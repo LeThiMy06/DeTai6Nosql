@@ -31,7 +31,17 @@ public sealed class MongoAdminRepository : IAdminRepository
                 Unique = true
             });
 
-        return _admins.Indexes.CreateOneAsync(usernameIndex);
+        var initialAccountIndex = new CreateIndexModel<AdminAccount>(
+            Builders<AdminAccount>.IndexKeys.Ascending(x => x.IsInitialAccount),
+            new CreateIndexOptions<AdminAccount>
+            {
+                Name = "InitialAdmin_1",
+                Unique = true,
+                PartialFilterExpression = Builders<AdminAccount>.Filter.Eq(x => x.IsInitialAccount, true)
+            });
+
+        _admins.Indexes.CreateOne(usernameIndex);
+        return _admins.Indexes.CreateOneAsync(initialAccountIndex);
     }
 
     public async Task<bool> HasAnyAsync() =>

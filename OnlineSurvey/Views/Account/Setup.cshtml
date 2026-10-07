@@ -1,0 +1,43 @@
+@model AdminSetupViewModel
+@{
+    ViewData["Title"] = "Thiết lập quản trị viên";
+}
+
+<div class="auth-card auth-card-elevated" data-reveal>
+    @if (Model.IsConfigured)
+    {
+        <h1 class="h3 fw-bold mb-2">Admin đã được thiết lập</h1>
+        <p class="text-secondary mb-4">Database đã có tài khoản quản trị, nên trang tạo admin lần đầu đã khóa. Hãy đăng nhập bằng tài khoản hiện có.</p>
+        <a asp-action="Login" class="btn btn-primary w-100 py-2">Đến trang đăng nhập</a>
+    }
+    else
+    {
+        <span class="eyebrow">Thiết lập lần đầu</span>
+        <h1 class="h3 fw-bold mb-2">Tạo tài khoản quản trị</h1>
+        <p class="text-secondary mb-4">Tài khoản này chỉ tạo được một lần khi cơ sở dữ liệu chưa có quản trị viên. Mật khẩu cần ít nhất 12 ký tự.</p>
+        <form asp-action="Setup" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="mb-3">
+                <label asp-for="Username" class="form-label fw-semibold"></label>
+                <input asp-for="Username" class="form-control" autocomplete="username" />
+                <span asp-validation-for="Username" class="text-danger small"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label fw-semibold"></label>
+                <input asp-for="Password" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+            <div class="mb-4">
+                <label asp-for="ConfirmPassword" class="form-label fw-semibold"></label>
+                <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+            </div>
+            <button class="btn btn-primary w-100 py-2" type="submit">Tạo tài khoản</button>
+        </form>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

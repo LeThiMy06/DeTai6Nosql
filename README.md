@@ -93,21 +93,22 @@ Test-NetConnection 127.0.0.1 -Port 6379
 
 Hai kết quả `TcpTestSucceeded` cần là `True`.
 
-Tạo admin lần đầu và chạy web:
+Khởi động ứng dụng như bình thường:
 
 ~~~powershell
-$env:ONLINE_SURVEY_ADMIN_USERNAME = "admin"
-$env:ONLINE_SURVEY_ADMIN_PASSWORD = "Admin@12345"
 dotnet restore .\OnlineSurvey.slnx
 dotnet run --project .\OnlineSurvey\OnlineSurvey.csproj --launch-profile http
 ~~~
 
-Mở `http://localhost:5080`. Tài khoản demo:
+Nếu database chưa có admin, mở `http://localhost:5080/account/setup` ngay trên máy chạy ứng dụng, rồi tự chọn tên đăng nhập và mật khẩu (tối thiểu 12 ký tự). Trang này chỉ khả dụng từ localhost và tự khóa sau khi tài khoản đầu tiên được tạo.
 
-~~~text
-Username: admin
-Password: Admin@12345
+Admin được lưu trong MongoDB và mật khẩu chỉ được lưu dưới dạng hash. Từ lần chạy tiếp theo, chỉ cần bật MongoDB, Redis rồi chạy:
+
+~~~powershell
+dotnet run --project .\OnlineSurvey\OnlineSurvey.csproj --launch-profile http
 ~~~
+
+Đăng nhập bằng tài khoản đã tạo. Không dùng mật khẩu demo này trên hệ thống công khai.
 
 ## 6. Cài và chạy MongoDB, Redis trực tiếp
 
@@ -171,7 +172,9 @@ Không commit connection string có mật khẩu lên GitHub.
 
 ## 8. Tài khoản admin
 
-Khi khởi động, app tự tạo unique index `NormalizedUsername_1`. Nếu `admins` rỗng, hai biến bootstrap tạo tài khoản đầu tiên:
+Khi khởi động, app tự tạo unique index `NormalizedUsername_1`. Trên máy phát triển, nếu collection `admins` chưa có tài khoản, mở `http://localhost:5080/account/setup` để tạo admin ban đầu. Trang thiết lập chỉ nhận request từ loopback, yêu cầu mật khẩu ít nhất 12 ký tự và không thể dùng lại sau khi đã có admin.
+
+Với máy chủ không thể mở trang setup từ localhost, có thể bootstrap một lần bằng biến môi trường:
 
 ~~~powershell
 $env:ONLINE_SURVEY_ADMIN_USERNAME = "admin"
@@ -179,7 +182,7 @@ $env:ONLINE_SURVEY_ADMIN_PASSWORD = "Admin@12345"
 dotnet run --project .\OnlineSurvey\OnlineSurvey.csproj
 ~~~
 
-Mật khẩu được băm bằng `PasswordHasher<AdminAccount>`. Chỉ `PasswordHash` được lưu. Biến bootstrap không đổi mật khẩu và không tạo thêm tài khoản khi collection đã có admin.
+Mật khẩu được băm bằng `PasswordHasher<AdminAccount>`. Chỉ `PasswordHash` được lưu. Tài khoản được giữ trong MongoDB, vì vậy các lần khởi động sau không cần chạy lại lệnh tạo admin hay đặt biến bootstrap. Biến bootstrap không đổi mật khẩu và không tạo thêm tài khoản khi collection đã có admin. Nếu database chưa có admin và chưa bootstrap, ứng dụng vẫn chạy; trên máy local hãy dùng trang setup.
 
 ## 9. Chạy bằng CLI hoặc Visual Studio
 
@@ -404,8 +407,8 @@ Nếu không đăng nhập được:
 
 - Kiểm tra database là `OnlineSurvey`.
 - Kiểm tra `admins` có document.
-- Tài khoản demo: `admin / Admin@12345`.
-- Biến bootstrap chỉ hoạt động khi `admins` rỗng.
+- Nếu `admins` rỗng, mở `http://localhost:5080/account/setup` từ chính máy chạy web để tạo admin lần đầu.
+- Nếu `admins` đã có tài khoản, đăng nhập bằng thông tin đã thiết lập; biến bootstrap chỉ hoạt động khi collection còn rỗng.
 
 ## 17. Dừng MongoDB và Redis local
 
@@ -447,10 +450,10 @@ cd REPOSITORY
 Set-ExecutionPolicy -Scope Process Bypass
 .\start-dependencies.ps1
 dotnet restore .\OnlineSurvey.slnx
-$env:ONLINE_SURVEY_ADMIN_USERNAME = "admin"
-$env:ONLINE_SURVEY_ADMIN_PASSWORD = "Admin@12345"
 dotnet run --project .\OnlineSurvey\OnlineSurvey.csproj --launch-profile http
 ~~~
+
+Trên database mới, mở `http://localhost:5080/account/setup` ngay trên máy vừa chạy ứng dụng để tạo admin. Các lần sau chỉ cần bật dịch vụ và chạy `dotnet run --project .\OnlineSurvey\OnlineSurvey.csproj --launch-profile http`, sau đó đăng nhập bằng tài khoản đã tạo.
 
 ## 20. Checklist trước khi nộp/demo
 

@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -19,8 +20,66 @@ public sealed class AccountController : Controller
 
     [AllowAnonymous]
     [HttpGet]
-    public IActionResult Login(string? returnUrl = null)
+    public async Task<IActionResult> Setup()
     {
+        if (!IsLocalRequest())
+        {
+            return NotFound();
+        }
+
+        if (await _adminRepository.HasAnyAsync())
+        {
+            return View(new AdminSetupViewModel { IsConfigured = true });
+        }
+
+        return View(new AdminSetupViewModel());
+    }
+
+    [AllowAnonymous]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Setup(AdminSetupViewModel model)
+    {
+        if (!IsLocalRequest())
+        {
+            return NotFound();
+        }
+
+        if (await _adminRepository.HasAnyAsync())
+        {
+            return RedirectToAction(nameof(Login));
+        }
+
+        model.Username = model.Username?.Trim() ?? "";
+        if (model.Username.Length < 3)
+        {
+            ModelState.AddModelError(nameof(model.Username), "Tên đăng nhập cần ít nhất 3 ký tự.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var created = await _adminRepository.CreateInitialAsync(model.Username, model.Password);
+        if (!created)
+        {
+            return RedirectToAction(nameof(Login));
+        }
+
+        TempData["StatusMessage"] = "Đã tạo tài khoản quản trị. Hãy đăng nhập để tiếp tục.";
+        return RedirectToAction(nameof(Login));
+    }
+
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<IActionResult> Login(string? returnUrl = null)
+    {
+        if (IsLocalRequest() && !await _adminRepository.HasAnyAsync())
+        {
+            return RedirectToAction(nameof(Setup));
+        }
+
         return View(new LoginViewModel { ReturnUrl = returnUrl });
     }
 
@@ -73,5 +132,11 @@ public sealed class AccountController : Controller
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Index", "Home");
+    }
+
+    private bool IsLocalRequest()
+    {
+        var remoteIp = HttpContext.Connection.RemoteIpAddress;
+        return remoteIp is not null && IPAddress.IsLoopback(remoteIp);
     }
 }
