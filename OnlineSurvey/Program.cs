@@ -59,6 +59,7 @@ builder.Services.AddSingleton<IAdminRepository, MongoAdminRepository>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
+        options.Cookie.Name = "OnlineSurvey.Admin";
         options.LoginPath = "/account/login";
         options.AccessDeniedPath = "/account/login";
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
@@ -71,30 +72,15 @@ var app = builder.Build();
 var adminRepository = app.Services.GetRequiredService<IAdminRepository>();
 await adminRepository.InitializeAsync();
 
-var bootstrapUsername = Environment.GetEnvironmentVariable("ONLINE_SURVEY_ADMIN_USERNAME");
-var bootstrapPassword = Environment.GetEnvironmentVariable("ONLINE_SURVEY_ADMIN_PASSWORD");
-
-if (!string.IsNullOrWhiteSpace(bootstrapUsername) &&
-    !string.IsNullOrWhiteSpace(bootstrapPassword))
+if (!await adminRepository.HasAnyAsync())
 {
-    var created = await adminRepository.CreateInitialAsync(
-        bootstrapUsername,
-        bootstrapPassword);
+    var created = await adminRepository.CreateInitialAsync("admin", "Admin@12345");
 
     if (created)
     {
         app.Logger.LogInformation(
-            "Đã tạo tài khoản quản trị ban đầu '{Username}' trong MongoDB.",
-            bootstrapUsername);
+            "Đã tạo tài khoản quản trị mặc định trong MongoDB.");
     }
-}
-
-if (!await adminRepository.HasAnyAsync())
-{
-    app.Logger.LogWarning(
-        "Database chưa có tài khoản quản trị. Hãy đặt ONLINE_SURVEY_ADMIN_USERNAME " +
-        "và ONLINE_SURVEY_ADMIN_PASSWORD khi chạy lần đầu trên máy chủ, hoặc mở " +
-        "http://localhost:5080/account/setup từ chính máy chạy ứng dụng để thiết lập.");
 }
 
 if (!app.Environment.IsDevelopment())

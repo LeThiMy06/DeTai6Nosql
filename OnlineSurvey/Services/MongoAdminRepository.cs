@@ -47,6 +47,9 @@ public sealed class MongoAdminRepository : IAdminRepository
     public async Task<bool> HasAnyAsync() =>
         await _admins.CountDocumentsAsync(FilterDefinition<AdminAccount>.Empty) > 0;
 
+    public async Task<string?> GetAnyUsernameAsync() =>
+        (await _admins.Find(FilterDefinition<AdminAccount>.Empty).FirstOrDefaultAsync())?.Username;
+
     public async Task<AdminAccount?> AuthenticateAsync(string username, string password)
     {
         var normalizedUsername = NormalizeUsername(username);
