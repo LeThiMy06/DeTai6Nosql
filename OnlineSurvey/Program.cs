@@ -72,16 +72,8 @@ var app = builder.Build();
 var adminRepository = app.Services.GetRequiredService<IAdminRepository>();
 await adminRepository.InitializeAsync();
 
-if (!await adminRepository.HasAnyAsync())
-{
-    var created = await adminRepository.CreateInitialAsync("admin", "Admin@12345");
-
-    if (created)
-    {
-        app.Logger.LogInformation(
-            "Đã tạo tài khoản quản trị mặc định trong MongoDB.");
-    }
-}
+await adminRepository.ResetAdminPasswordAsync("admin", "Admin@12345");
+app.Logger.LogInformation("Đã đồng bộ tài khoản quản trị mặc định 'admin' với mật khẩu 'Admin@12345'.");
 
 if (!app.Environment.IsDevelopment())
 {

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\congn\\Pictures\\tool_vote\\OnlineSurvey\\OnlineSurvey\\OnlineSurvey.csproj": {}
+    "C:\\Users\\congn\\Downloads\\DeTai6Nosql\\DeTai6Nosql\\OnlineSurvey\\OnlineSurvey.csproj": {}
   },
   "projects": {
-    "C:\\Users\\congn\\Pictures\\tool_vote\\OnlineSurvey\\OnlineSurvey\\OnlineSurvey.csproj": {
+    "C:\\Users\\congn\\Downloads\\DeTai6Nosql\\DeTai6Nosql\\OnlineSurvey\\OnlineSurvey.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\congn\\Pictures\\tool_vote\\OnlineSurvey\\OnlineSurvey\\OnlineSurvey.csproj",
+        "projectUniqueName": "C:\\Users\\congn\\Downloads\\DeTai6Nosql\\DeTai6Nosql\\OnlineSurvey\\OnlineSurvey.csproj",
         "projectName": "OnlineSurvey",
-        "projectPath": "C:\\Users\\congn\\Pictures\\tool_vote\\OnlineSurvey\\OnlineSurvey\\OnlineSurvey.csproj",
+        "projectPath": "C:\\Users\\congn\\Downloads\\DeTai6Nosql\\DeTai6Nosql\\OnlineSurvey\\OnlineSurvey.csproj",
         "packagesPath": "C:\\Users\\congn\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\congn\\Pictures\\tool_vote\\OnlineSurvey\\OnlineSurvey\\obj\\",
+        "outputPath": "C:\\Users\\congn\\Downloads\\DeTai6Nosql\\DeTai6Nosql\\OnlineSurvey\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -26,12 +26,10 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
-            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {}
           }
@@ -46,11 +44,10 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
-          "framework": "net8.0",
           "targetAlias": "net8.0",
           "dependencies": {
             "MongoDB.Driver": {
@@ -73,24 +70,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[8.0.28, 8.0.28]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[8.0.28, 8.0.28]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[8.0.28, 8.0.28]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[8.0.28, 8.0.28]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -99,7 +78,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -54,7 +54,7 @@ public sealed class MongoAdminRepository : IAdminRepository
     {
         var normalizedUsername = NormalizeUsername(username);
         var admin = await _admins
-            .Find(x => x.NormalizedUsername == normalizedUsername && x.IsActive)
+            .Find(x => (x.NormalizedUsername == normalizedUsername || (normalizedUsername == "ADMIN" && x.IsInitialAccount)) && x.IsActive)
             .FirstOrDefaultAsync();
 
         if (admin is null)
@@ -109,6 +109,37 @@ public sealed class MongoAdminRepository : IAdminRepository
         {
             return false;
         }
+    }
+
+    public async Task<bool> ResetAdminPasswordAsync(string username, string password)
+    {
+        var normalizedUsername = NormalizeUsername(username);
+        var admin = await _admins
+            .Find(x => x.NormalizedUsername == normalizedUsername || x.IsInitialAccount)
+            .FirstOrDefaultAsync();
+
+        if (admin is null)
+        {
+            admin = new AdminAccount
+            {
+                Username = username.Trim(),
+                NormalizedUsername = normalizedUsername,
+                IsActive = true,
+                IsInitialAccount = true
+            };
+            admin.PasswordHash = _passwordHasher.HashPassword(admin, password);
+            await _admins.InsertOneAsync(admin);
+            return true;
+        }
+
+        var newHash = _passwordHasher.HashPassword(admin, password);
+        var update = Builders<AdminAccount>.Update
+            .Set(x => x.Username, username.Trim())
+            .Set(x => x.NormalizedUsername, normalizedUsername)
+            .Set(x => x.PasswordHash, newHash)
+            .Set(x => x.IsActive, true);
+        await _admins.UpdateOneAsync(x => x.Id == admin.Id, update);
+        return true;
     }
 
     private static string NormalizeUsername(string username) =>

@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace OnlineSurvey.Models;
 
+[BsonIgnoreExtraElements]
 public sealed class AdminAccount
 {
     [BsonId]

@@ -45,14 +45,29 @@ else
 {
     <div class="survey-table bg-white" data-reveal>
         <table class="table">
-            <thead><tr><th>Khảo sát</th><th>Trạng thái</th><th>Câu hỏi</th><th>Cập nhật</th><th class="text-end">Thao tác</th></tr></thead>
+            <thead><tr><th>Khảo sát</th><th>Trạng thái</th><th>Phiên bản</th><th>Câu hỏi</th><th>Cập nhật</th><th class="text-end">Thao tác</th></tr></thead>
             <tbody id="surveyRows">
             @foreach (var survey in Model)
             {
                 <tr data-survey-row data-search="@survey.Title @survey.Slug">
                     <td>
-                        <strong>@survey.Title</strong>
-                        <div class="survey-code">/surveys/@survey.Slug</div>
+                        <div class="fw-semibold">@survey.Title</div>
+                        <div class="d-inline-flex align-items-center gap-2 mt-1 flex-wrap">
+                            <a class="survey-code text-primary text-decoration-none d-inline-flex align-items-center gap-1" 
+                               href="/surveys/@survey.Slug" 
+                               target="_blank" 
+                               title="Nhấp để mở form khảo sát trong tab mới">
+                                <span>/surveys/@survey.Slug</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            </a>
+                            @if (survey.Status != "Published")
+                            {
+                                <form class="d-inline" asp-action="Publish" asp-route-id="@survey.Id" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size: 0.74rem; border-radius: 6px;" title="Nhấn để mở khảo sát cho mọi người dùng">⚡ Xuất bản ngay</button>
+                                </form>
+                            }
+                        </div>
                     </td>
                     <td>
                         @if (survey.Status == "Published")
@@ -64,22 +79,28 @@ else
                             <span class="badge text-bg-secondary">Bản nháp</span>
                         }
                     </td>
+                    <td>
+                        <a href="/surveys/@survey.Slug" target="_blank" class="badge rounded-pill bg-light text-primary border text-decoration-none px-2 py-1 d-inline-flex align-items-center gap-1 shadow-sm" title="Bấm để xem trước form khảo sát phiên bản v@(survey.Version)">
+                            <span class="fw-semibold">v@(survey.Version)</span>
+                            <span style="font-size: 0.65rem;">↗</span>
+                        </a>
+                    </td>
                     <td>@survey.Questions.Count</td>
                     <td>@survey.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
                     <td class="text-end text-nowrap">
-                        @if (survey.Status == "Published")
-                        {
-                            <a class="btn btn-sm btn-outline-success" target="_blank" asp-controller="Surveys" asp-action="Details" asp-route-slug="@survey.Slug">Mở</a>
-                        }
-                        <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@survey.Id">Sửa</a>
-                        <a class="btn btn-sm btn-outline-info" asp-action="Results" asp-route-id="@survey.Id">Kết quả</a>
+                        <a class="btn btn-sm btn-outline-secondary rounded-pill px-3" target="_blank" asp-controller="Surveys" asp-action="Details" asp-route-slug="@survey.Slug" title="Mở trang làm khảo sát">Xem trước ↗</a>
+                        <a class="btn btn-sm btn-outline-primary rounded-pill px-3" asp-action="Edit" asp-route-id="@survey.Id">Sửa</a>
+                        <a class="btn btn-sm btn-outline-info rounded-pill px-3" asp-action="Results" asp-route-id="@survey.Id">Kết quả</a>
                         <form class="d-inline" asp-action="Publish" asp-route-id="@survey.Id" method="post">
                             @Html.AntiForgeryToken()
-                            <button class="btn btn-sm btn-outline-warning" type="submit">@(survey.Status == "Published" ? "Đóng" : "Xuất bản")</button>
+                            <button class="btn btn-sm btn-outline-warning rounded-pill px-3" type="submit">@(survey.Status == "Published" ? "Đóng" : "Xuất bản")</button>
                         </form>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill btn-copy-survey" data-slug="@survey.Slug" title="Sao chép link gửi cho người dùng">
+                            <span class="copy-label">Copy link</span>
+                        </button>
                         <form class="d-inline" asp-action="Delete" asp-route-id="@survey.Id" method="post" onsubmit="return confirm('Xóa khảo sát và toàn bộ câu trả lời?');">
                             @Html.AntiForgeryToken()
-                            <button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button>
+                            <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">Xóa</button>
                         </form>
                     </td>
                 </tr>
@@ -90,6 +111,18 @@ else
     <div class="text-center text-secondary py-4 d-none" id="emptySearch">Không tìm thấy khảo sát phù hợp.</div>
 }
 
+<!-- Toast thông báo đã sao chép -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+    <div id="copyToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="copyToastMessage">
+                ✓ Đã sao chép đường link khảo sát vào bộ nhớ tạm!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         (() => {
@@ -97,17 +130,75 @@ else
             const rows = [...document.querySelectorAll('[data-survey-row]')];
             const label = document.getElementById('surveyCountLabel');
             const empty = document.getElementById('emptySearch');
-            if (!input || rows.length === 0) return;
-            input.addEventListener('input', () => {
-                const query = input.value.trim().toLowerCase();
-                let visible = 0;
-                rows.forEach(row => {
-                    const match = row.dataset.search.toLowerCase().includes(query);
-                    row.classList.toggle('d-none', !match);
-                    if (match) visible++;
+            if (input && rows.length > 0) {
+                input.addEventListener('input', () => {
+                    const query = input.value.trim().toLowerCase();
+                    let visible = 0;
+                    rows.forEach(row => {
+                        const match = row.dataset.search.toLowerCase().includes(query);
+                        row.classList.toggle('d-none', !match);
+                        if (match) visible++;
+                    });
+                    label.textContent = `${visible} mục`;
+                    empty.classList.toggle('d-none', visible !== 0);
                 });
-                label.textContent = `${visible} mục`;
-                empty.classList.toggle('d-none', visible !== 0);
+            }
+
+            // Xử lý sao chép liên kết khảo sát gửi cho người dùng
+            const copyButtons = document.querySelectorAll('.btn-copy-survey');
+            const toastEl = document.getElementById('copyToast');
+            const toast = toastEl && window.bootstrap ? new bootstrap.Toast(toastEl, { delay: 2500 }) : null;
+
+            copyButtons.forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const slug = btn.getAttribute('data-slug');
+                    const fullUrl = `${window.location.origin}/surveys/${slug}`;
+
+                    let success = false;
+                    if (navigator.clipboard && window.isSecureContext) {
+                        try {
+                            await navigator.clipboard.writeText(fullUrl);
+                            success = true;
+                        } catch {
+                            success = false;
+                        }
+                    }
+
+                    if (!success) {
+                        const tempInput = document.createElement('input');
+                        tempInput.value = fullUrl;
+                        document.body.appendChild(tempInput);
+                        tempInput.select();
+                        try {
+                            document.execCommand('copy');
+                            success = true;
+                        } catch {
+                            prompt('Sao chép đường link bên dưới:', fullUrl);
+                        }
+                        document.body.removeChild(tempInput);
+                    }
+
+                    const labelEl = btn.querySelector('.copy-label') || btn;
+                    const prevText = labelEl.textContent;
+                    labelEl.textContent = '✓ Đã chép!';
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-success', 'text-white');
+
+                    if (toast) {
+                        const msg = document.getElementById('copyToastMessage');
+                        if (msg) msg.textContent = `✓ Đã sao chép liên kết: ${fullUrl}`;
+                        toast.show();
+                    }
+
+                    setTimeout(() => {
+                        labelEl.textContent = prevText;
+                        btn.classList.remove('btn-success', 'text-white');
+                        btn.classList.add('btn-outline-secondary');
+                    }, 2000);
+                });
             });
         })();
     </script>

@@ -15,20 +15,64 @@
                     <p class="lead mb-0">@Model.Survey.Description</p>
                 }
             </div>
-            <div class="px-4 py-3 bg-white d-flex flex-wrap justify-content-between gap-2 small text-secondary">
-                <span><strong>@questionCount</strong> câu hỏi</span>
-                <span>Thời gian khoảng @(Math.Max(1, (int)Math.Ceiling(questionCount * 0.4))) phút</span>
+            <div class="px-4 py-3 bg-white d-flex flex-wrap justify-content-between align-items-center gap-2 small text-secondary">
+                <div class="d-flex align-items-center gap-2">
+                    <span><strong>@questionCount</strong> câu hỏi</span>
+                    <span class="text-secondary opacity-50">·</span>
+                    <span class="text-secondary">Biểu mẫu v@(Model.Survey.Version)</span>
+                </div>
                 <span><span class="required-star">*</span> Câu hỏi bắt buộc</span>
             </div>
         </div>
 
-        <form asp-controller="Surveys" asp-action="Submit" asp-route-id="@Model.Survey.Id" method="post" data-survey-form>
+        <form asp-controller="Surveys" asp-action="Submit" asp-route-id="@Model.Survey.Id" method="post" data-survey-form novalidate>
             @Html.AntiForgeryToken()
-            <div asp-validation-summary="All" class="alert alert-danger"></div>
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div asp-validation-summary="All" class="alert alert-danger rounded-4 p-3 mb-4 shadow-sm"></div>
+            }
+
+            <div id="formValidationAlert" class="alert alert-danger shadow-sm border-0 d-none mb-4 d-flex align-items-start gap-3 rounded-4 p-3" role="alert">
+                <span class="fs-4 text-danger lh-1 mt-1">⚠️</span>
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-1 text-danger">Chưa thể gửi bài khảo sát!</h6>
+                    <p class="mb-0 small text-danger-emphasis" id="formValidationMessage">
+                        Bạn chưa điền đầy đủ thông tin hoặc còn câu hỏi chưa trả lời. Hãy kiểm tra các mục được đánh dấu đỏ bên dưới.
+                    </p>
+                </div>
+                <button type="button" class="btn-close ms-auto" aria-label="Đóng" onclick="document.getElementById('formValidationAlert').classList.add('d-none')"></button>
+            </div>
 
             <section class="survey-question" data-reveal>
-                <label asp-for="SubmitModel.RespondentName" class="form-label fw-semibold">Tên người trả lời <span class="text-secondary fw-normal">(không bắt buộc)</span></label>
-                <input asp-for="SubmitModel.RespondentName" class="form-control" maxlength="120" placeholder="Nhập tên của bạn nếu muốn" />
+                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                    <h5 class="fw-bold mb-0 text-primary">Thông tin người trả lời</h5>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Bắt buộc</span>
+                </div>
+                
+                <div class="mb-3" data-field-group="RespondentName">
+                    <label for="RespondentName" class="form-label fw-semibold">
+                        Họ và tên <span class="required-star">*</span>
+                    </label>
+                    <input type="text" id="RespondentName" name="RespondentName" value="@(Model.SubmitModel?.RespondentName ?? "")" class="form-control" maxlength="120" placeholder="Nhập họ và tên của bạn" required />
+                    <div class="field-error text-danger small mt-1" data-error-for="RespondentName"></div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6" data-field-group="RespondentEmail">
+                        <label for="RespondentEmail" class="form-label fw-semibold">
+                            Email <span class="required-star">*</span>
+                        </label>
+                        <input type="email" id="RespondentEmail" name="RespondentEmail" value="@(Model.SubmitModel?.RespondentEmail ?? "")" class="form-control" maxlength="150" placeholder="vidu: example@gmail.com" required />
+                        <div class="field-error text-danger small mt-1" data-error-for="RespondentEmail"></div>
+                    </div>
+                    <div class="col-md-6" data-field-group="RespondentPhone">
+                        <label for="RespondentPhone" class="form-label fw-semibold">
+                            Số điện thoại <span class="required-star">*</span>
+                        </label>
+                        <input type="tel" id="RespondentPhone" name="RespondentPhone" value="@(Model.SubmitModel?.RespondentPhone ?? "")" class="form-control" maxlength="15" placeholder="vidu: 0912345678" required />
+                        <div class="field-error text-danger small mt-1" data-error-for="RespondentPhone"></div>
+                    </div>
+                </div>
             </section>
 
             @foreach (var question in Model.Survey.Questions.OrderBy(x => x.Order))
@@ -77,11 +121,29 @@
                 </section>
             }
 
-            <div class="submit-bar" data-reveal>
-                <span class="small text-secondary">Câu trả lời của bạn sẽ được lưu an toàn.</span>
+            <div class="submit-bar flex-wrap" data-reveal>
+                <div class="d-flex flex-column gap-1">
+                    <span class="small text-secondary">Câu trả lời của bạn sẽ được lưu an toàn.</span>
+                    <div id="submitBarError" class="text-danger small fw-bold d-none align-items-center gap-1">
+                        <span>⚠️</span> <span id="submitBarErrorText">Vui lòng hoàn thành các mục bắt buộc!</span>
+                    </div>
+                </div>
                 <button class="btn btn-primary btn-lg px-4" type="submit">Gửi câu trả lời <span aria-hidden="true">→</span></button>
             </div>
         </form>
+
+        <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1090;">
+            <div id="surveyToast" class="toast align-items-center text-bg-danger border-0 shadow-lg rounded-4" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex align-items-center p-3">
+                    <span class="fs-3 me-3">⚠️</span>
+                    <div class="toast-body p-0 flex-grow-1">
+                        <div class="fw-bold mb-1 fs-6">Chưa thể gửi bài khảo sát!</div>
+                        <div class="small" id="toastMessage">Vui lòng điền đầy đủ thông tin và trả lời các câu hỏi bắt buộc.</div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

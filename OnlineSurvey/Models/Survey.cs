@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace OnlineSurvey.Models;
 
+[BsonIgnoreExtraElements]
 public sealed class Survey
 {
     [BsonId]
@@ -17,11 +18,13 @@ public sealed class Survey
     public string Description { get; set; } = "";
     public string Status { get; set; } = "Draft";
     public int Version { get; set; } = 1;
+    public int EstimatedMinutes { get; set; } = 5;
     public List<SurveyQuestion> Questions { get; set; } = [];
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
+[BsonIgnoreExtraElements]
 public sealed class SurveyQuestion
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
@@ -32,12 +35,14 @@ public sealed class SurveyQuestion
     public List<QuestionOption> Options { get; set; } = [];
 }
 
+[BsonIgnoreExtraElements]
 public sealed class QuestionOption
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Text { get; set; } = "";
 }
 
+[BsonIgnoreExtraElements]
 public sealed class SurveyResponse
 {
     [BsonId]
@@ -49,10 +54,13 @@ public sealed class SurveyResponse
 
     public int SurveyVersion { get; set; }
     public string RespondentName { get; set; } = "";
+    public string RespondentEmail { get; set; } = "";
+    public string RespondentPhone { get; set; } = "";
     public List<SurveyAnswer> Answers { get; set; } = [];
     public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 }
 
+[BsonIgnoreExtraElements]
 public sealed class SurveyAnswer
 {
     public string QuestionId { get; set; } = "";

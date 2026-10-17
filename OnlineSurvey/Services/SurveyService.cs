@@ -1,13 +1,23 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text.Json;
 using OnlineSurvey.Models;
 using StackExchange.Redis;
 
+/// <summary>
+/// Cấu trúc dữ liệu Redis dùng trong ứng dụng:
+///   STRING  – Cache biểu mẫu khảo sát (GetPublishedBySlugAsync)
+///   HASH    – Thống kê khảo sát realtime (IncrementSurveyStatsAsync / GetSurveyStatsAsync) & Giới hạn tốc độ gửi bài (AllowSubmissionAsync)
+///   SET     – Đếm khách tham gia duy nhất (TrackUniqueRespondentAsync / GetUniqueRespondentCountAsync)
+///   LIST    – Nhật ký sự kiện gửi bài gần đây (PushRecentEventAsync / GetRecentEventsAsync)
+/// </summary>
+
 namespace OnlineSurvey.Services;
 
 public sealed class SurveyService
 {
-    private const int SubmissionLimit = 3;
+    private const int SubmissionLimit = 5;
+    private const int RecentEventsLimit = 20;
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan RateWindow = TimeSpan.FromMinutes(1);
     private readonly ISurveyRepository _repository;
@@ -98,12 +108,16 @@ public sealed class SurveyService
     public Task<List<SurveyResponse>> GetResponsesAsync(string surveyId) =>
         _repository.GetResponsesAsync(surveyId);
 
+    private static readonly ConcurrentDictionary<string, (int Count, DateTime Expiry)> _memoryRateLimit = new();
+
+    // ───────────────── Redis HASH: Giới hạn tốc độ gửi bài (Rate Limiter) ─────────────────
+
     public async Task<bool> AllowSubmissionAsync(string surveyId, string clientKey)
     {
-        var key = $"rate:survey:{surveyId}:{clientKey}";
+        var key = $"rate:client:{clientKey}";
         try
         {
-            var count = await _redis.StringIncrementAsync(key);
+            var count = await _redis.HashIncrementAsync(key, surveyId, 1);
 
             if (count == 1)
             {
@@ -112,10 +126,17 @@ public sealed class SurveyService
 
             return count <= SubmissionLimit;
         }
-        catch (RedisException exception)
+        catch (Exception exception)
         {
-            _logger.LogWarning(exception, "Redis rate limiter unavailable for survey {SurveyId}", surveyId);
-            return true;
+            _logger.LogWarning(exception, "Redis rate limiter unavailable for survey {SurveyId}, using memory fallback", surveyId);
+            var now = DateTime.UtcNow;
+            var entry = _memoryRateLimit.AddOrUpdate(
+                $"{key}:{surveyId}",
+                _ => (1, now.Add(RateWindow)),
+                (_, old) => old.Expiry < now ? (1, now.Add(RateWindow)) : (old.Count + 1, old.Expiry)
+            );
+
+            return entry.Count <= SubmissionLimit;
         }
     }
 
@@ -135,6 +156,125 @@ public sealed class SurveyService
             _logger.LogWarning(exception, "Redis cache invalidation failed for survey slug {Slug}", slug);
         }
     }
+
+    // ───────────────── Redis HASH: Thống kê số liệu khảo sát (HINCRBY / HSET / HGETALL) ─────────────────
+
+    /// <summary>
+    /// Cập nhật số liệu thống kê realtime cho khảo sát vào Redis HASH.
+    /// </summary>
+    public async Task IncrementSurveyStatsAsync(string surveyId)
+    {
+        var key = $"stats:survey:{surveyId}";
+        try
+        {
+            await _redis.HashIncrementAsync(key, "total_responses", 1);
+            await _redis.HashSetAsync(key, "last_submitted_at", DateTime.UtcNow.ToString("o"));
+        }
+        catch (RedisException ex)
+        {
+            _logger.LogWarning(ex, "Redis HASH increment failed for survey {SurveyId}", surveyId);
+        }
+    }
+
+    /// <summary>
+    /// Lấy số liệu thống kê khảo sát từ Redis HASH (HGETALL).
+    /// </summary>
+    public async Task<(long TotalResponses, string? LastSubmittedAt)> GetSurveyStatsAsync(string surveyId)
+    {
+        var key = $"stats:survey:{surveyId}";
+        try
+        {
+            var entries = await _redis.HashGetAllAsync(key);
+            if (entries.Length == 0)
+            {
+                return (0, null);
+            }
+
+            var dict = entries.ToDictionary(x => x.Name.ToString(), x => x.Value.ToString());
+            long total = dict.TryGetValue("total_responses", out var s) && long.TryParse(s, out var count) ? count : 0;
+            string? last = dict.TryGetValue("last_submitted_at", out var d) ? d : null;
+            return (total, last);
+        }
+        catch (RedisException ex)
+        {
+            _logger.LogWarning(ex, "Redis HASH get failed for survey {SurveyId}", surveyId);
+            return (0, null);
+        }
+    }
+
+    // ───────────────── Redis SET: Khách tham gia duy nhất ─────────────────
+
+    /// <summary>
+    /// Thêm clientKey vào Redis Set để đếm khách tham gia duy nhất.
+    /// </summary>
+    public async Task TrackUniqueRespondentAsync(string surveyId, string clientKey)
+    {
+        var key = $"unique:survey:{surveyId}";
+        try
+        {
+            await _redis.SetAddAsync(key, clientKey);
+        }
+        catch (RedisException ex)
+        {
+            _logger.LogWarning(ex, "Redis SET add failed for survey {SurveyId}", surveyId);
+        }
+    }
+
+    /// <summary>
+    /// Trả về số lượng khách tham gia duy nhất (SCARD).
+    /// </summary>
+    public async Task<long> GetUniqueRespondentCountAsync(string surveyId)
+    {
+        var key = $"unique:survey:{surveyId}";
+        try
+        {
+            return await _redis.SetLengthAsync(key);
+        }
+        catch (RedisException ex)
+        {
+            _logger.LogWarning(ex, "Redis SET length failed for survey {SurveyId}", surveyId);
+            return 0;
+        }
+    }
+
+    // ───────────────── Redis LIST: Sự kiện gửi bài gần đây ─────────────────
+
+    /// <summary>
+    /// Đẩy một sự kiện gửi bài vào đầu Redis List (LPUSH) và cắt giữ tối đa RecentEventsLimit phần tử.
+    /// </summary>
+    public async Task PushRecentEventAsync(string surveyId, string eventJson)
+    {
+        var key = $"events:survey:{surveyId}";
+        try
+        {
+            await _redis.ListLeftPushAsync(key, eventJson);
+            await _redis.ListTrimAsync(key, 0, RecentEventsLimit - 1);
+        }
+        catch (RedisException ex)
+        {
+            _logger.LogWarning(ex, "Redis LIST push failed for survey {SurveyId}", surveyId);
+        }
+    }
+
+    /// <summary>
+    /// Lấy danh sách sự kiện gửi gần đây (LRANGE 0..count-1).
+    /// </summary>
+    public async Task<List<string>> GetRecentEventsAsync(string surveyId, int count = 20)
+    {
+        var key = $"events:survey:{surveyId}";
+        try
+        {
+            var values = await _redis.ListRangeAsync(key, 0, count - 1);
+            return values.Select(v => v.ToString()).ToList();
+        }
+        catch (RedisException ex)
+        {
+            _logger.LogWarning(ex, "Redis LIST range failed for survey {SurveyId}", surveyId);
+            return [];
+        }
+    }
+
+    // ───────────────── Utilities ─────────────────
 
     public static string HashClient(string value)
     {

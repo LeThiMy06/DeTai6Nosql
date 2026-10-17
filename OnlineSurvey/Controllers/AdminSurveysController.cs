@@ -62,7 +62,7 @@ public sealed class AdminSurveysController : Controller
             Title = model.Title.Trim(),
             Description = model.Description?.Trim() ?? "",
             Questions = questions,
-            Status = "Draft"
+            Status = string.Equals(model.Status, "Draft", StringComparison.OrdinalIgnoreCase) ? "Draft" : "Published"
         };
 
         try
@@ -122,6 +122,7 @@ public sealed class AdminSurveysController : Controller
         existing.Slug = BuildSlug(model.Slug, model.Title);
         existing.Description = model.Description?.Trim() ?? "";
         existing.Questions = questions;
+        existing.Status = string.Equals(model.Status, "Draft", StringComparison.OrdinalIgnoreCase) ? "Draft" : "Published";
         existing.Version++;
         existing.UpdatedAt = DateTime.UtcNow;
 
@@ -183,10 +184,36 @@ public sealed class AdminSurveysController : Controller
         }
 
         var responses = await _surveyService.GetResponsesAsync(id);
+
+        // Redis HASH – số liệu thống kê tổng hợp thời gian thực
+        var (hashTotalResponses, _) = await _surveyService.GetSurveyStatsAsync(id);
+        var totalResponses = hashTotalResponses > 0 ? (int)hashTotalResponses : responses.Count;
+
+        // Redis SET – số khách tham gia duy nhất
+        var uniqueCount = await _surveyService.GetUniqueRespondentCountAsync(id);
+
+        // Redis LIST – sự kiện gửi bài gần đây
+        var recentRaw = await _surveyService.GetRecentEventsAsync(id, 20);
+        var recentEvents = recentRaw
+            .Select(json =>
+            {
+                try
+                {
+                    return JsonSerializer.Deserialize<RecentEventItem>(json, JsonOptions);
+                }
+                catch { return null; }
+            })
+            .Where(e => e is not null)
+            .Cast<RecentEventItem>()
+            .ToList();
+
         var model = new SurveyResultsViewModel
         {
             Survey = survey,
-            TotalResponses = responses.Count
+            TotalResponses = totalResponses,
+            UniqueRespondents = uniqueCount,
+            RecentEvents = recentEvents,
+            Responses = responses
         };
 
         foreach (var question in survey.Questions.OrderBy(x => x.Order))
@@ -230,7 +257,7 @@ public sealed class AdminSurveysController : Controller
         }
 
         var responses = await _surveyService.GetResponsesAsync(id);
-        var columns = new[] { "SubmittedAt", "RespondentName" }
+        var columns = new[] { "Thời gian nộp", "Người nộp", "Email", "Số điện thoại" }
             .Concat(survey.Questions.OrderBy(x => x.Order).Select(x => x.Text));
         var csv = new StringBuilder();
         csv.AppendLine(string.Join(",", columns.Select(EscapeCsv)));
@@ -239,14 +266,21 @@ public sealed class AdminSurveysController : Controller
         {
             var values = new List<string>
             {
-                response.SubmittedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
-                response.RespondentName
+                response.SubmittedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss"),
+                string.IsNullOrWhiteSpace(response.RespondentName) ? "Khách ẩn danh" : response.RespondentName,
+                response.RespondentEmail ?? "",
+                response.RespondentPhone ?? ""
             };
 
             values.AddRange(survey.Questions.OrderBy(x => x.Order).Select(question =>
-                string.Join("; ", response.Answers
+            {
+                var answers = response.Answers
                     .Where(answer => answer.QuestionId == question.Id)
-                    .SelectMany(answer => answer.Values))));
+                    .SelectMany(answer => answer.Values)
+                    .Select(val => question.Options.FirstOrDefault(o => o.Id == val)?.Text ?? val);
+                return string.Join("; ", answers);
+            }));
+
             csv.AppendLine(string.Join(",", values.Select(EscapeCsv)));
         }
 

@@ -1,85 +1,82 @@
 is_global = true
 build_property.RedisMinServerVersion = 
 build_property.TargetFramework = net8.0
-build_property.TargetFrameworkIdentifier = .NETCoreApp
-build_property.TargetFrameworkVersion = v8.0
 build_property.TargetPlatformMinVersion = 
 build_property.UsingMicrosoftNETSdkWeb = true
 build_property.ProjectTypeGuids = 
 build_property.InvariantGlobalization = 
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
-build_property.EntryPointFilePath = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = OnlineSurvey
 build_property.RootNamespace = OnlineSurvey
-build_property.ProjectDir = C:\Users\congn\Pictures\tool_vote\OnlineSurvey\OnlineSurvey\
+build_property.ProjectDir = C:\Users\congn\Downloads\DeTai6Nosql\DeTai6Nosql\OnlineSurvey\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\congn\Pictures\tool_vote\OnlineSurvey\OnlineSurvey
+build_property.MSBuildProjectDirectory = C:\Users\congn\Downloads\DeTai6Nosql\DeTai6Nosql\OnlineSurvey
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/Account/Login.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/AdminSurveys/Editor.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/AdminSurveys/Editor.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5TdXJ2ZXlzXEVkaXRvci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/AdminSurveys/Index.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/AdminSurveys/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5TdXJ2ZXlzXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/AdminSurveys/Results.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/AdminSurveys/Results.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5TdXJ2ZXlzXFJlc3VsdHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/Home/Index.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/Home/Privacy.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/Shared/Error.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/Shared/_ValidationScriptsPartial.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/Surveys/AlreadySubmitted.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/Surveys/AlreadySubmitted.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VydmV5c1xBbHJlYWR5U3VibWl0dGVkLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/Surveys/Details.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/Surveys/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VydmV5c1xEZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/Surveys/RateLimited.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/Surveys/RateLimited.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VydmV5c1xSYXRlTGltaXRlZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/Surveys/Submitted.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/Surveys/Submitted.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VydmV5c1xTdWJtaXR0ZWQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/_ViewImports.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/_ViewStart.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/congn/Pictures/tool_vote/OnlineSurvey/OnlineSurvey/Views/Shared/_Layout.cshtml]
+[C:/Users/congn/Downloads/DeTai6Nosql/DeTai6Nosql/OnlineSurvey/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-56sc4rbyfo

@@ -9,4 +9,5 @@ public interface IAdminRepository
     Task<string?> GetAnyUsernameAsync();
     Task<AdminAccount?> AuthenticateAsync(string username, string password);
     Task<bool> CreateInitialAsync(string username, string password);
+    Task<bool> ResetAdminPasswordAsync(string username, string password);
 }

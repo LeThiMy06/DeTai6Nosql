@@ -24,24 +24,56 @@
             <div class="editor-card mb-4" data-reveal>
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div><h2 class="h5 mb-1">Thông tin cơ bản</h2><p class="small text-secondary mb-0">Những gì người trả lời sẽ nhìn thấy đầu tiên.</p></div>
-                        <span class="badge text-bg-light">@(isEdit ? $"Phiên bản {Model.Version}" : "Bản nháp")</span>
+                        <div>
+                            <h2 class="h5 mb-1">Thông tin cơ bản</h2>
+                            <p class="small text-secondary mb-0">Những gì người trả lời sẽ nhìn thấy đầu tiên.</p>
+                        </div>
                     </div>
                     <div class="row g-3">
-                        <div class="col-md-8">
+                        <div class="col-md-7">
                             <label asp-for="Title" class="form-label fw-semibold"></label>
                             <input asp-for="Title" class="form-control form-control-lg" placeholder="Ví dụ: Khảo sát chất lượng môn học" />
                             <span asp-validation-for="Title" class="text-danger small"></span>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-5">
                             <label asp-for="Slug" class="form-label fw-semibold"></label>
                             <input asp-for="Slug" class="form-control" placeholder="tu-dong-theo-ten" />
                             <div class="form-text">Chỉ dùng chữ, số và dấu gạch ngang.</div>
                             <span asp-validation-for="Slug" class="text-danger small"></span>
+                            @if (isEdit && !string.IsNullOrWhiteSpace(Model.Slug))
+                            {
+                                <div class="mt-1 small">
+                                    <a href="/surveys/@Model.Slug" target="_blank" class="text-primary text-decoration-none fw-medium">↗ Xem link: /surveys/@Model.Slug</a>
+                                </div>
+                            }
                         </div>
                         <div class="col-12">
                             <label asp-for="Description" class="form-label fw-semibold"></label>
                             <textarea asp-for="Description" class="form-control" rows="3" placeholder="Nói ngắn gọn mục đích của khảo sát..."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Status" class="form-label fw-semibold">Trạng thái phát hành</label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="Published">🟢 Xuất bản ngay (Mở cho người dùng)</option>
+                                <option value="Draft">🟡 Lưu bản nháp (Chỉ lưu nội bộ)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phiên bản dữ liệu (NoSQL Version)</label>
+                            <div class="p-2 px-3 bg-light border rounded-3 d-flex align-items-center justify-content-between" style="min-height: 42px;">
+                                <span class="fw-semibold text-dark">
+                                    @(isEdit ? $"Bản hiện tại: v{Model.Version}" : "Khởi tạo: v1")
+                                </span>
+                                @if (isEdit)
+                                {
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.75rem;">Lưu sẽ cập nhật lên v@(Model.Version + 1)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.75rem;">Bản khởi tạo đầu tiên</span>
+                                }
+                            </div>
+                            <div class="form-text">Hệ thống tự động tăng phiên bản khi bạn chỉnh sửa để theo dõi lịch sử.</div>
                         </div>
                     </div>
                 </div>

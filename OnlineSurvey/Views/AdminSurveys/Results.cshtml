@@ -3,29 +3,320 @@
     ViewData["Title"] = "Kết quả khảo sát";
 }
 
-<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4" data-reveal>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4" data-reveal>
     <div>
-        <span class="eyebrow">Báo cáo khảo sát</span>
-        <h1 class="display-6 fw-bold mb-1">@Model.Survey.Title</h1>
-        <p class="text-secondary mb-0">Theo dõi lựa chọn và các phản hồi dạng văn bản.</p>
+        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+            <span class="eyebrow mb-0">BÁO CÁO KHẢO SÁT</span>
+            <span class="badge rounded-pill bg-light text-secondary border px-2 py-1 small fw-semibold">Bản v@(Model.Survey.Version)</span>
+            @if (Model.Survey.Status == "Published")
+            {
+                <span class="badge text-bg-success rounded-pill px-2 py-1 small">● Đang mở</span>
+            }
+            else
+            {
+                <span class="badge rounded-pill px-2 py-1 small" style="background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a;">🟡 Bản nháp</span>
+            }
+        </div>
+        <h1 class="display-6 fw-bold mb-2">@Model.Survey.Title</h1>
+        <div class="d-inline-flex flex-wrap align-items-center gap-2">
+            <a href="/surveys/@Model.Survey.Slug" target="_blank" class="btn btn-sm btn-light border rounded-pill text-decoration-none text-primary fw-medium px-3 py-1 d-inline-flex align-items-center gap-1 shadow-sm" title="Mở trang khảo sát">
+                <span>/surveys/@Model.Survey.Slug</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </a>
+            <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 btn-copy-survey shadow-sm" data-slug="@Model.Survey.Slug" title="Sao chép liên kết">
+                <span class="copy-label">📋 Sao chép link</span>
+            </button>
+            @if (Model.Survey.Status != "Published")
+            {
+                <form class="d-inline" asp-action="Publish" asp-route-id="@Model.Survey.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm rounded-pill px-3 py-1 fw-semibold text-dark shadow-sm" style="background-color: #ffc107; border: 1px solid #e0a800;" title="Nhấn để xuất bản khảo sát cho người dùng">🚀 Xuất bản ngay</button>
+                </form>
+            }
+            else
+            {
+                <form class="d-inline" asp-action="Publish" asp-route-id="@Model.Survey.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1 shadow-sm" title="Nhấn để đóng khảo sát">⏸ Tạm dừng nhận bài</button>
+                </form>
+            }
+        </div>
     </div>
     <div class="d-flex gap-2">
-        <a class="btn btn-outline-primary" asp-action="Export" asp-route-id="@Model.Survey.Id">↓ Tải CSV</a>
-        <a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a>
+        <a class="btn btn-primary px-3 shadow-sm" asp-action="Export" asp-route-id="@Model.Survey.Id">↓ Tải CSV</a>
+        <a class="btn btn-outline-secondary px-3" asp-action="Index">Quay lại danh sách</a>
     </div>
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-sm-4"><div class="metric-card metric-card-primary" data-reveal style="--reveal-delay: 50ms"><div class="metric-label">Lượt trả lời</div><div class="metric-value" data-counter="@Model.TotalResponses">@Model.TotalResponses</div></div></div>
-    <div class="col-sm-4"><div class="metric-card metric-card-success" data-reveal style="--reveal-delay: 100ms"><div class="metric-label">Câu hỏi</div><div class="metric-value" data-counter="@Model.Questions.Count">@Model.Questions.Count</div></div></div>
-    <div class="col-sm-4"><div class="metric-card metric-card-violet" data-reveal style="--reveal-delay: 150ms"><div class="metric-label">Phiên bản form</div><div class="metric-value" data-counter="@Model.Survey.Version">@Model.Survey.Version</div></div></div>
+    <div class="col-sm-6 col-md-3">
+        <div class="metric-card metric-card-primary" data-reveal style="--reveal-delay: 50ms">
+            <div class="metric-label">LƯỢT TRẢ LỜI</div>
+            <div class="metric-value" data-counter="@Model.TotalResponses">@Model.TotalResponses</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="metric-card metric-card-warning" data-reveal style="--reveal-delay: 100ms">
+            <div class="metric-label">KHÁCH THAM GIA DUY NHẤT</div>
+            <div class="metric-value" data-counter="@Model.UniqueRespondents">@Model.UniqueRespondents</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="metric-card metric-card-success" data-reveal style="--reveal-delay: 150ms">
+            <div class="metric-label">CÂU HỎI</div>
+            <div class="metric-value" data-counter="@Model.Questions.Count">@Model.Questions.Count</div>
+            <div class="metric-trend">Trong biểu mẫu</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="metric-card metric-card-violet" data-reveal style="--reveal-delay: 200ms">
+            <div class="metric-label">CẬP NHẬT GẦN NHẤT</div>
+            <div class="metric-value" style="font-size: 1.6rem;">@Model.Survey.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy")</div>
+            <div class="metric-trend">Lúc @Model.Survey.UpdatedAt.ToLocalTime().ToString("HH:mm")</div>
+        </div>
+    </div>
 </div>
+
+<!-- Phần danh sách những ai đã khảo sát & thời gian nộp bài -->
+<div class="result-card p-4 mb-4" data-reveal style="--reveal-delay: 200ms">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+            <h2 class="h5 fw-bold mb-0">Thời gian làm bài &amp; Lượt gửi gần đây</h2>
+        </div>
+        <div>
+            <span class="badge bg-light text-dark border fw-normal px-2 py-1">@Model.Responses.Count phản hồi đã lưu</span>
+        </div>
+    </div>
+
+    @if (Model.Responses.Count == 0)
+    {
+        <div class="text-center py-4 text-secondary">
+            <p class="mb-0">Chưa có lượt gửi câu trả lời nào được ghi nhận.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr class="text-secondary small text-uppercase" style="border-bottom: 2px solid var(--line);">
+                        <th style="width: 60px;">STT</th>
+                        <th>Thời gian nộp bài</th>
+                        <th>Người nộp</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>Đã trả lời</th>
+                        <th class="text-end">Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @{ int stt = 1; }
+                @foreach (var resp in Model.Responses)
+                {
+                    var collapseId = $"resp-{resp.Id}";
+                    var answeredCount = resp.Answers?.Count ?? 0;
+                    var respondentDisplayName = string.IsNullOrWhiteSpace(resp.RespondentName) ? "Khách ẩn danh" : resp.RespondentName.Trim();
+                    var isAnonymous = string.IsNullOrWhiteSpace(resp.RespondentName);
+
+                    <tr>
+                        <td class="fw-semibold text-secondary">@(stt++)</td>
+                        <td>
+                            <span class="d-inline-flex align-items-center gap-1">
+                                <span>📅</span>
+                                <span>@resp.SubmittedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</span>
+                            </span>
+                        </td>
+                        <td>
+                            @if (isAnonymous)
+                            {
+                                <span class="text-secondary fst-italic">Khách ẩn danh</span>
+                            }
+                            else
+                            {
+                                <span class="fw-semibold text-dark">@resp.RespondentName</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(resp.RespondentEmail))
+                            {
+                                <a href="mailto:@resp.RespondentEmail" class="text-decoration-none">@resp.RespondentEmail</a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(resp.RespondentPhone))
+                            {
+                                <span>@resp.RespondentPhone</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border px-2 py-1 fw-normal">@answeredCount câu</span>
+                        </td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" style="font-size: 0.8rem;" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
+                                Xem bài nộp ▾
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="collapse bg-light" id="@collapseId">
+                        <td colspan="7" class="p-3 bg-light">
+                            <div class="card card-body border-0 shadow-sm rounded-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom flex-wrap gap-2">
+                                    <div>
+                                        <strong class="text-primary fs-6">@respondentDisplayName</strong>
+                                        @if (!string.IsNullOrWhiteSpace(resp.RespondentEmail))
+                                        {
+                                            <span class="text-secondary ms-2 small">✉ @resp.RespondentEmail</span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(resp.RespondentPhone))
+                                        {
+                                            <span class="text-secondary ms-2 small">📞 @resp.RespondentPhone</span>
+                                        }
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-light text-secondary border small">Bản khảo sát: v@(resp.SurveyVersion > 0 ? resp.SurveyVersion : 1)</span>
+                                        <small class="text-secondary">Nộp lúc: @resp.SubmittedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</small>
+                                    </div>
+                                </div>
+                                @if (resp.Answers == null || resp.Answers.Count == 0)
+                                {
+                                    <p class="text-secondary mb-0 small">Không có dữ liệu câu trả lời.</p>
+                                }
+                                else
+                                {
+                                    <div class="row g-2">
+                                    @foreach (var q in Model.Survey.Questions.OrderBy(x => x.Order))
+                                    {
+                                        var ans = resp.Answers.FirstOrDefault(a => a.QuestionId == q.Id);
+                                        <div class="col-12 p-2 border-bottom border-light">
+                                            <div class="small fw-semibold text-dark mb-1">
+                                                <span class="text-secondary me-1">@q.Order.</span>@q.Text
+                                            </div>
+                                            @if (ans == null || ans.Values.Count == 0)
+                                            {
+                                                <div class="small text-muted fst-italic ps-3">(Bỏ qua / không trả lời)</div>
+                                            }
+                                            else
+                                            {
+                                                @if (q.Type == "single_choice" || q.Type == "multiple_choice")
+                                                {
+                                                    <div class="ps-3 d-flex flex-wrap gap-1">
+                                                        @foreach (var valId in ans.Values)
+                                                        {
+                                                            var optText = q.Options.FirstOrDefault(o => o.Id == valId)?.Text ?? valId;
+                                                            <span class="badge text-bg-primary fw-normal">@optText</span>
+                                                        }
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="ps-3 small text-dark bg-white p-2 rounded border border-light">
+                                                        @string.Join(", ", ans.Values)
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    }
+                                    </div>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<!-- Sự kiện gửi gần đây – Redis LIST (LRANGE) -->
+<div class="result-card p-4 mb-4" data-reveal style="--reveal-delay: 250ms">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+            <h2 class="h5 fw-bold mb-0">Lượt gửi gần đây <span class="badge bg-info text-white fw-normal px-2 py-1 small">Redis LIST</span></h2>
+        </div>
+        <div>
+            <span class="badge bg-light text-dark border fw-normal px-2 py-1">@Model.RecentEvents.Count / 20 lượt gần nhất</span>
+        </div>
+    </div>
+
+    @if (Model.RecentEvents.Count == 0)
+    {
+        <div class="text-center py-4 text-secondary">
+            <p class="mb-0">Chưa có sự kiện gửi bài nào được ghi nhận trong Redis LIST.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr class="text-secondary small text-uppercase" style="border-bottom: 2px solid var(--line);">
+                        <th style="width: 60px;">STT</th>
+                        <th>Thời gian nộp</th>
+                        <th>Người nộp</th>
+                        <th>Email</th>
+                        <th>Số câu trả lời</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @{ int eventIndex = 1; }
+                @foreach (var evt in Model.RecentEvents)
+                {
+                    <tr>
+                        <td class="fw-semibold text-secondary">@(eventIndex++)</td>
+                        <td>
+                            <span class="d-inline-flex align-items-center gap-1">
+                                <span>📅</span>
+                                <span>@evt.SubmittedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</span>
+                            </span>
+                        </td>
+                        <td>
+                            @if (string.IsNullOrWhiteSpace(evt.RespondentName))
+                            {
+                                <span class="text-secondary fst-italic">Khách ẩn danh</span>
+                            }
+                            else
+                            {
+                                <span class="fw-semibold text-dark">@evt.RespondentName</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(evt.RespondentEmail))
+                            {
+                                <span>@evt.RespondentEmail</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border px-2 py-1 fw-normal">@evt.AnswerCount câu</span>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<!-- Chi tiết kết quả từng câu hỏi -->
+<h2 class="h5 fw-bold mb-3" data-reveal>Chi tiết kết quả từng câu hỏi</h2>
 
 @foreach (var result in Model.Questions)
 {
     <div class="result-card p-4 mb-3" data-reveal style="--reveal-delay: @(Math.Min(result.Question.Order * 45, 270))ms">
         <div class="d-flex justify-content-between gap-3 mb-3">
-            <h2 class="h5 mb-0"><span class="text-secondary me-1">@result.Question.Order.</span>@result.Question.Text</h2>
+            <h3 class="h5 mb-0"><span class="text-secondary me-1">@result.Question.Order.</span>@result.Question.Text</h3>
             <span class="badge text-bg-light">@(result.Question.Type switch { "single_choice" => "Chọn một", "multiple_choice" => "Chọn nhiều", "textarea" => "Trả lời dài", _ => "Trả lời ngắn" })</span>
         </div>
         @if (result.Options.Count > 0)
@@ -52,4 +343,76 @@
             <p class="text-secondary mb-0">Chưa có câu trả lời.</p>
         }
     </div>
+}
+
+<!-- Toast thông báo đã sao chép -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+    <div id="copyToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="copyToastMessage">
+                ✓ Đã sao chép đường link khảo sát vào bộ nhớ tạm!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const copyButtons = document.querySelectorAll('.btn-copy-survey');
+            const toastEl = document.getElementById('copyToast');
+            const toast = toastEl && window.bootstrap ? new bootstrap.Toast(toastEl, { delay: 2500 }) : null;
+
+            copyButtons.forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const slug = btn.getAttribute('data-slug');
+                    const fullUrl = `${window.location.origin}/surveys/${slug}`;
+
+                    let success = false;
+                    if (navigator.clipboard && window.isSecureContext) {
+                        try {
+                            await navigator.clipboard.writeText(fullUrl);
+                            success = true;
+                        } catch {
+                            success = false;
+                        }
+                    }
+
+                    if (!success) {
+                        const tempInput = document.createElement('input');
+                        tempInput.value = fullUrl;
+                        document.body.appendChild(tempInput);
+                        tempInput.select();
+                        try {
+                            document.execCommand('copy');
+                            success = true;
+                        } catch {
+                            prompt('Sao chép đường link bên dưới:', fullUrl);
+                        }
+                        document.body.removeChild(tempInput);
+                    }
+
+                    const labelEl = btn.querySelector('.copy-label') || btn;
+                    const prevText = labelEl.textContent;
+                    labelEl.textContent = '✓ Đã chép!';
+                    btn.classList.add('btn-success', 'text-white');
+
+                    if (toast) {
+                        const msg = document.getElementById('copyToastMessage');
+                        if (msg) msg.textContent = `✓ Đã sao chép liên kết: ${fullUrl}`;
+                        toast.show();
+                    }
+
+                    setTimeout(() => {
+                        labelEl.textContent = prevText;
+                        btn.classList.remove('btn-success', 'text-white');
+                    }, 2000);
+                });
+            });
+        })();
+    </script>
 }

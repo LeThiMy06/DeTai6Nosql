@@ -144,11 +144,13 @@ const surveysValidator = {
             },
             Status: {
                 bsonType: "string",
-                enum: ["Draft", "Published"]
+                enum: ["Draft", "Published"],
+                description: "Trang thai khao sat: Draft (Ban nhap) hoac Published (Xuat ban ngay / Dang mo)"
             },
             Version: {
                 bsonType: "int",
-                minimum: 1
+                minimum: 1,
+                description: "Phien ban khao sat: bat dau tu 1, tu dong tang moi khi cap nhat khao sat"
             },
             Questions: {
                 bsonType: "array",
@@ -256,7 +258,18 @@ const responsesValidator = {
             },
             RespondentName: {
                 bsonType: "string",
-                maxLength: 160
+                maxLength: 160,
+                description: "Ho va ten nguoi tra loi"
+            },
+            RespondentEmail: {
+                bsonType: "string",
+                maxLength: 160,
+                description: "Dia chi email nguoi tra loi"
+            },
+            RespondentPhone: {
+                bsonType: "string",
+                maxLength: 30,
+                description: "So dien thoai nguoi tra loi"
             },
             Answers: {
                 bsonType: "array",

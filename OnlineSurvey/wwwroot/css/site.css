@@ -199,6 +199,8 @@ header, .page-shell, .site-footer { position: relative; z-index: 1; }
 .metric-card-success::before { background: linear-gradient(90deg, #16845b, #4fd6a4); }
 .metric-card-success::after { background: radial-gradient(circle, rgba(22,132,91,.11), transparent 68%); }
 .metric-card-violet::before { background: linear-gradient(90deg, #776ae8, #ad89ff); }
+.metric-card-warning::before { background: linear-gradient(90deg, #e8a817, #f6c94e); }
+.metric-card-warning::after { background: radial-gradient(circle, rgba(232,168,23,.11), transparent 68%); }
 .metric-trend { position: relative; z-index: 1; margin-top: 2px; color: var(--muted); font-size: .73rem; }
 .metric-value { position: relative; z-index: 1; }
 
