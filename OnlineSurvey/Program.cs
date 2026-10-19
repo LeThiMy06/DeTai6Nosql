@@ -75,6 +75,15 @@ await adminRepository.InitializeAsync();
 await adminRepository.ResetAdminPasswordAsync("admin", "Admin@12345");
 app.Logger.LogInformation("Đã đồng bộ tài khoản quản trị mặc định 'admin' với mật khẩu 'Admin@12345'.");
 
+if (args.Contains("--seed-large", StringComparer.OrdinalIgnoreCase))
+{
+    var mongoDb = app.Services.GetRequiredService<IMongoDatabase>();
+    var surveyService = app.Services.GetRequiredService<SurveyService>();
+    var (surveyCount, responseCount) = await LargeDataSeeder.SeedAllLargeDataAsync(mongoDb, surveyService, "6aab4ec590062125b3635833");
+    Console.WriteLine($"[SEED SUCCESS] Đã nạp thành công {surveyCount} khảo sát lớn (mỗi khảo sát đúng 100 câu hỏi, tổng 500 câu hỏi) và {responseCount} phản hồi mẫu vào MongoDB!");
+    return;
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");

@@ -22,16 +22,28 @@ public sealed class AdminSurveysController : Controller
         PropertyNameCaseInsensitive = true
     };
     private readonly SurveyService _surveyService;
+    private readonly IMongoDatabase _database;
 
-    public AdminSurveysController(SurveyService surveyService)
+    public AdminSurveysController(SurveyService surveyService, IMongoDatabase database)
     {
         _surveyService = surveyService;
+        _database = database;
     }
 
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
         return View(await _surveyService.GetAllAsync());
+    }
+
+    [HttpPost("seed-large-data")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SeedLargeData()
+    {
+        var adminId = CurrentAdminId();
+        var (surveyCount, responseCount) = await LargeDataSeeder.SeedAllLargeDataAsync(_database, _surveyService, adminId);
+        TempData["Success"] = $"Đã nạp thành công {surveyCount} khảo sát lớn (bao gồm khảo sát 100 câu hỏi) và {responseCount} phản hồi mẫu vào MongoDB!";
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("create")]

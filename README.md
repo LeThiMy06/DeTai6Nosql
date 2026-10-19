@@ -379,6 +379,23 @@ db.surveys.countDocuments()   // 15
 db.responses.countDocuments() // 70
 ~~~
 
+### 15.1. Dữ liệu mẫu lớn (5 Khảo sát x 100 câu hỏi = 500 câu hỏi)
+
+Toàn bộ Schema, Validator, Index và 5 Khảo sát 100 câu hỏi đã được tích hợp trọn vẹn trong file:
+**`.\database\OnlineSurvey-Schema.mongodb.js`**
+
+Chạy trực tiếp bằng mongosh hoặc MongoDB Compass:
+~~~powershell
+mongosh "mongodb://127.0.0.1:27017/OnlineSurvey" .\database\OnlineSurvey-Schema.mongodb.js
+~~~
+
+Hoặc nạp bằng lệnh .NET:
+~~~powershell
+cd OnlineSurvey
+dotnet run --seed-large
+~~~
+
+
 Nếu tự tạo backup BSON bằng mongodump, có thể khôi phục bằng:
 
 ~~~powershell

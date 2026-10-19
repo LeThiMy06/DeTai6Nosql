@@ -34,37 +34,42 @@ public sealed class SurveyService
         _logger = logger;
     }
 
+    public bool IsRedisConnected => _redis.Multiplexer.IsConnected;
+
     public async Task<Survey?> GetPublishedBySlugAsync(string slug)
     {
         slug = slug.Trim().ToLowerInvariant();
         var cacheKey = CacheKey(slug);
 
-        try
+        if (IsRedisConnected)
         {
-            var cached = await _redis.StringGetAsync(cacheKey);
-            if (!cached.IsNullOrEmpty)
+            try
             {
-                var cachedSurvey = JsonSerializer.Deserialize<Survey>(cached.ToString());
-                if (cachedSurvey is not null)
+                var cached = await _redis.StringGetAsync(cacheKey);
+                if (!cached.IsNullOrEmpty)
                 {
-                    return cachedSurvey;
-                }
+                    var cachedSurvey = JsonSerializer.Deserialize<Survey>(cached.ToString());
+                    if (cachedSurvey is not null)
+                    {
+                        return cachedSurvey;
+                    }
 
-                await _redis.KeyDeleteAsync(cacheKey);
+                    await _redis.KeyDeleteAsync(cacheKey);
+                }
             }
-        }
-        catch (RedisException exception)
-        {
-            _logger.LogWarning(exception, "Redis cache read failed for survey slug {Slug}", slug);
-        }
-        catch (JsonException exception)
-        {
-            _logger.LogWarning(exception, "Invalid survey cache for slug {Slug}", slug);
-            try { await _redis.KeyDeleteAsync(cacheKey); } catch (RedisException) { }
+            catch (RedisException exception)
+            {
+                _logger.LogWarning(exception, "Redis cache read failed for survey slug {Slug}", slug);
+            }
+            catch (JsonException exception)
+            {
+                _logger.LogWarning(exception, "Invalid survey cache for slug {Slug}", slug);
+                try { await _redis.KeyDeleteAsync(cacheKey); } catch (RedisException) { }
+            }
         }
 
         var survey = await _repository.GetPublishedBySlugAsync(slug);
-        if (survey is not null)
+        if (survey is not null && IsRedisConnected)
         {
             try
             {
@@ -115,6 +120,18 @@ public sealed class SurveyService
     public async Task<bool> AllowSubmissionAsync(string surveyId, string clientKey)
     {
         var key = $"rate:client:{clientKey}";
+        if (!IsRedisConnected)
+        {
+            var now = DateTime.UtcNow;
+            var entry = _memoryRateLimit.AddOrUpdate(
+                $"{key}:{surveyId}",
+                _ => (1, now.Add(RateWindow)),
+                (_, old) => old.Expiry < now ? (1, now.Add(RateWindow)) : (old.Count + 1, old.Expiry)
+            );
+
+            return entry.Count <= SubmissionLimit;
+        }
+
         try
         {
             var count = await _redis.HashIncrementAsync(key, surveyId, 1);
@@ -142,7 +159,7 @@ public sealed class SurveyService
 
     public async Task InvalidateAsync(string? slug)
     {
-        if (string.IsNullOrWhiteSpace(slug))
+        if (string.IsNullOrWhiteSpace(slug) || !IsRedisConnected)
         {
             return;
         }
@@ -164,6 +181,7 @@ public sealed class SurveyService
     /// </summary>
     public async Task IncrementSurveyStatsAsync(string surveyId)
     {
+        if (!IsRedisConnected) return;
         var key = $"stats:survey:{surveyId}";
         try
         {
@@ -181,6 +199,7 @@ public sealed class SurveyService
     /// </summary>
     public async Task<(long TotalResponses, string? LastSubmittedAt)> GetSurveyStatsAsync(string surveyId)
     {
+        if (!IsRedisConnected) return (0, null);
         var key = $"stats:survey:{surveyId}";
         try
         {
@@ -209,6 +228,7 @@ public sealed class SurveyService
     /// </summary>
     public async Task TrackUniqueRespondentAsync(string surveyId, string clientKey)
     {
+        if (!IsRedisConnected) return;
         var key = $"unique:survey:{surveyId}";
         try
         {
@@ -225,6 +245,7 @@ public sealed class SurveyService
     /// </summary>
     public async Task<long> GetUniqueRespondentCountAsync(string surveyId)
     {
+        if (!IsRedisConnected) return 0;
         var key = $"unique:survey:{surveyId}";
         try
         {
@@ -244,6 +265,7 @@ public sealed class SurveyService
     /// </summary>
     public async Task PushRecentEventAsync(string surveyId, string eventJson)
     {
+        if (!IsRedisConnected) return;
         var key = $"events:survey:{surveyId}";
         try
         {
@@ -261,6 +283,7 @@ public sealed class SurveyService
     /// </summary>
     public async Task<List<string>> GetRecentEventsAsync(string surveyId, int count = 20)
     {
+        if (!IsRedisConnected) return [];
         var key = $"events:survey:{surveyId}";
         try
         {
